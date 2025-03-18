@@ -3,6 +3,7 @@ import os
 import shutil
 
 def download_dataset(dataset: str="sunnykusawa/tshirts", path = "./data") -> None:
+    path = f"{path}/{dataset.replace("/", "+")}"
     if os.path.exists(path):
         print(f"Data exists at {path}, please provide an empty path.")
     else:
