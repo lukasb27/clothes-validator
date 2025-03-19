@@ -28,7 +28,7 @@ def label_dataset():
         os.remove(image_path)
 
     def update_image():
-        if FILES:
+        if len(FILES) > 1:
             FILES.pop()
             img_path = FILES[-1]
             img = Image.open(img_path)
