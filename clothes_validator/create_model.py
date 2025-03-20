@@ -7,9 +7,10 @@ from torch import nn
 from torchvision import transforms
 from .custom_image_dataset import CustomImageDataset
 from .neural_network import NeuralNetwork 
+import os
 
-def get_custom_dataset(transform=None) -> CustomImageDataset:
-    return CustomImageDataset("labels.csv", transform)
+def get_custom_dataset(transform=None, label="labels.csv") -> CustomImageDataset:
+    return CustomImageDataset(label, transform)
 
 def get_data_loader(dataset: CustomImageDataset) -> DataLoader:
     return DataLoader(dataset, batch_size=64, shuffle=True)
@@ -35,19 +36,48 @@ def train_model(model, dataloader, criterion, optimizer, device, num_epochs=10):
         
         print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss / len(dataloader):.4f}")
     torch.save(model.state_dict(), 'model.pth')
+    return model
 
-def do_something():
+def validate_model(model, dataloader, device):
+    model.eval()
+
+    with torch.no_grad():
+        correct = 0
+        total = 0
+        for inputs, labels in dataloader:
+            inputs = inputs.float()
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = model(inputs)
+            _, predicted = torch.max(outputs, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+        
+        accuracy = 100 * correct / total
+    return accuracy
+
+def main():
     transform = v2.Compose([
         transforms.Resize((28,28))
     ])
     training_dataset = get_custom_dataset(transform=transform)
     training_dataloader = get_data_loader(training_dataset)
+
+    validation_dataset = get_custom_dataset(transform, "validation_labels.csv")
+    validation_dataloader = get_data_loader(validation_dataset)
+
     train_features, train_labels = next(iter(training_dataloader))
     device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
     criterion = nn.CrossEntropyLoss()
     model = NeuralNetwork().to(device)
     optimiser = optim.Adam(model.parameters(), lr=0.001)
-    train_model(model, training_dataloader, criterion, optimiser, device, num_epochs=10)
+
+    if os.path.exists('model.pth'):
+        model.load_state_dict(torch.load('model.pth', weights_only=True))
+    else:
+        model = train_model(model, training_dataloader, criterion, optimiser, device, num_epochs=10)
+
+    accuracy = validate_model(model, validation_dataloader, device)
+    print(f'Accuracy is {accuracy}%')
 
 if __name__ == "__main__":
     pass

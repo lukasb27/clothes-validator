@@ -7,11 +7,11 @@ import csv
 import os
 
 def get_files() -> List:
-    path = pathlib.Path(f"./data/")
-    return list(path.rglob("*.jpg"))
+    path = pathlib.Path(f"./validation/")
+    return list(path.rglob("*.[jpeg jpg]*"))
 
 FILES = get_files()
-CSV_PATH = "labels.csv"
+CSV_PATH = "validation_labels.csv"
 
 def ensure_csv_exists_with_headers(csv_path = CSV_PATH) -> None:
     if not os.path.exists(CSV_PATH):
@@ -25,7 +25,7 @@ def label_dataset():
             writer = csv.writer(csvfile)
             writer.writerow([image_path, decision])
         update_image()
-        os.remove(image_path)
+        # os.remove(image_path)
 
     def update_image():
         if len(FILES) > 1:

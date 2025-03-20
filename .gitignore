@@ -2,3 +2,6 @@ __pycache__
 data/
 labels.csv
 model.pth
+validation/
+validation_labels/
+.DS_Store
