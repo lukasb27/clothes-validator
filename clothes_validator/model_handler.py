@@ -1,3 +1,4 @@
+import argparse
 import os
 
 import matplotlib.pyplot as plt
@@ -20,7 +21,7 @@ def get_data_loader(dataset: CustomImageDataset) -> DataLoader:
 
 
 def train_model(model, dataloader, criterion, optimizer, device, num_epochs=10):
-    model.train()  # Set model to training mode
+    model.train()
 
     for epoch in range(num_epochs):
         running_loss = 0.0
@@ -41,7 +42,7 @@ def train_model(model, dataloader, criterion, optimizer, device, num_epochs=10):
         print(
             f"Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss / len(dataloader):.4f}"
         )
-    torch.save(model.state_dict(), "model.pth")
+    torch.save(model.state_dict(), args.model_file_path)
     return model
 
 
@@ -64,25 +65,48 @@ def validate_model(model, dataloader, device):
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Model handler. Responsible for either training or loading a model."
+    )
+    parser.add_argument(
+        "--training-label-path",
+        type=str,
+        default="labels.csv",
+        help="Path to the training label csv",
+    )
+    parser.add_argument(
+        "--validation-label-path",
+        type=str,
+        default="validation_labels.csv",
+        help="Path to the validation label csv",
+    )
+    parser.add_argument(
+        "--model-file-path",
+        type=str,
+        default="model.pth",
+        help="Path to the model pth file",
+    )
+    args = parser.parse_args()
+
     transform = v2.Compose([transforms.Resize((28, 28))])
-    training_dataset = get_custom_dataset(transform=transform)
+    training_dataset = get_custom_dataset(transform, args.training_label_path)
     training_dataloader = get_data_loader(training_dataset)
 
-    validation_dataset = get_custom_dataset(transform, "validation_labels.csv")
+    validation_dataset = get_custom_dataset(transform, args.validation_label_path)
     validation_dataloader = get_data_loader(validation_dataset)
 
-    train_features, train_labels = next(iter(training_dataloader))
     device = (
         torch.accelerator.current_accelerator().type
         if torch.accelerator.is_available()
         else "cpu"
     )
+
     criterion = nn.CrossEntropyLoss()
     model = NeuralNetwork().to(device)
     optimiser = optim.Adam(model.parameters(), lr=0.001)
 
-    if os.path.exists("model.pth"):
-        model.load_state_dict(torch.load("model.pth", weights_only=True))
+    if os.path.exists(args.model_file_path):
+        model.load_state_dict(torch.load(args.model_file_path, weights_only=True))
     else:
         model = train_model(
             model, training_dataloader, criterion, optimiser, device, num_epochs=10
