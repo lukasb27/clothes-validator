@@ -20,7 +20,7 @@ class CustomImageDataset(Dataset):
         image = read_image(img_path)
 
         label_map = {"liked": 1, "disliked": 0}
-        label = label_map[self.img_labels.iloc[idx, 1]]  # Convert string to int
+        label = float(label_map[self.img_labels.iloc[idx, 1]])
         label = torch.tensor(label, dtype=torch.long)
 
         if self.transform:

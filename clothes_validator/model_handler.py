@@ -3,7 +3,7 @@ import os
 
 import matplotlib.pyplot as plt
 import torch
-from torch import nn, optim
+from torch import Tensor, nn, optim
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.transforms import v2
@@ -12,27 +12,59 @@ from .custom_image_dataset import CustomImageDataset
 from .neural_network import NeuralNetwork
 
 
-def get_custom_dataset(transform=None, label="labels.csv") -> CustomImageDataset:
-    return CustomImageDataset(label, transform)
+def get_custom_dataset(label_file="labels.csv", transform: transforms.Compose =None) -> CustomImageDataset:
+    """Get custom dataset object.
+
+    :param label_file: Path to the csv label, defaults to "labels.csv".
+    :type label_file: str, optional
+    :param transform: The transforms to perform on the data, defaults to None
+    :type transform: transforms.Compose, optional - https://pytorch.org/vision/stable/generated/torchvision.transforms.Compose.html
+    :return: _description_
+    :rtype: CustomImageDataset - https://pytorch.org/tutorials/beginner/data_loading_tutorial.html
+    """
+    return CustomImageDataset(label_file, transform)
 
 
 def get_data_loader(dataset: CustomImageDataset) -> DataLoader:
+    """Get data loader object from a dataset.
+    
+    :param dataset: A dataset object.
+    :type dataset: CustomImageDataset
+    :return: DataLoader, a dataset iterable.
+    :rtype: DataLoader - https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader
+    """
     return DataLoader(dataset, batch_size=64, shuffle=True)
 
 
-def train_model(model, dataloader, criterion, optimizer, device, num_epochs=10):
+def train_model(model, dataloader: DataLoader, criterion, optimizer, device, model_file_path, num_epochs=10):
+
+    # Set model to train mode.
     model.train()
 
+    # Epochs are one whole pass through the dataset. The model will take in all the data at once.
+    # Multiple Epochs are set, so the model runs through training data more than once,
+    # this increases the accuracy of the model
     for epoch in range(num_epochs):
         running_loss = 0.0
+        # Get the batch of data from the dataloder. Remember that dataloader is an iterable object based on the dataset.
+        # The batch size is defined when the dataloader is instantiated, but defaults to 64 items.
         for batch in dataloader:
+            # Type hint to help me remember whats going on below.
+            labels: Tensor
+            labels: Tensor
+
+            # Unpack the batch tuple into input tensors and labels tensors into 1D Arrays.
             inputs, labels = batch
+
+            # Send the tensors to the correct device, based on the device param.
             inputs, labels = inputs.to(device), labels.to(device)
 
-            inputs = inputs.float()
+            # Reset the gradients from the previous run so they dont poison this run.
+            optimizer.zero_grad()
 
-            optimizer.zero_grad()  # Reset gradients
-            outputs = model(inputs)  # Forward pass
+            # Pass the inputs through the models layers (Forward pass)
+            outputs = model(inputs) 
+
             loss = criterion(outputs, labels)  # Compute loss
             loss.backward()  # Backpropagation
             optimizer.step()  # Update weights
@@ -42,7 +74,7 @@ def train_model(model, dataloader, criterion, optimizer, device, num_epochs=10):
         print(
             f"Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss / len(dataloader):.4f}"
         )
-    torch.save(model.state_dict(), args.model_file_path)
+    torch.save(model.state_dict(), model_file_path)
     return model
 
 
@@ -53,7 +85,6 @@ def validate_model(model, dataloader, device):
         correct = 0
         total = 0
         for inputs, labels in dataloader:
-            inputs = inputs.float()
             inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
             _, predicted = torch.max(outputs, 1)
@@ -89,17 +120,13 @@ def main():
     args = parser.parse_args()
 
     transform = v2.Compose([transforms.Resize((28, 28))])
-    training_dataset = get_custom_dataset(transform, args.training_label_path)
+    training_dataset = get_custom_dataset(args.training_label_path, transform)
     training_dataloader = get_data_loader(training_dataset)
 
-    validation_dataset = get_custom_dataset(transform, args.validation_label_path)
+    validation_dataset = get_custom_dataset(args.validation_label_path, transform)
     validation_dataloader = get_data_loader(validation_dataset)
 
-    device = (
-        torch.accelerator.current_accelerator().type
-        if torch.accelerator.is_available()
-        else "cpu"
-    )
+    device = torch.device("mps")
 
     criterion = nn.CrossEntropyLoss()
     model = NeuralNetwork().to(device)
@@ -109,7 +136,7 @@ def main():
         model.load_state_dict(torch.load(args.model_file_path, weights_only=True))
     else:
         model = train_model(
-            model, training_dataloader, criterion, optimiser, device, num_epochs=10
+            model, training_dataloader, criterion, optimiser, device, args.model_file_path, num_epochs=10
         )
 
     accuracy = validate_model(model, validation_dataloader, device)
