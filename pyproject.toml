@@ -25,8 +25,7 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-download_dataset = "clothes_validator.dataset_config:download_dataset"
-delete_dataset = "clothes_validator.dataset_config:remove_dataset"
-label_dataset = "clothes_validator.dataset_label:label_dataset"
+dataset = "clothes_validator.dataset_config:main"
+label_dataset = "clothes_validator.dataset_label:main"
 create_model = "clothes_validator.model_handler:main"
 
