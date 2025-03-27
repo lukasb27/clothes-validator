@@ -36,7 +36,7 @@ def get_data_loader(dataset: CustomImageDataset) -> DataLoader:
     return DataLoader(dataset, batch_size=64, shuffle=True)
 
 
-def train_model(model, dataloader: DataLoader, criterion, optimizer, device, model_file_path, num_epochs=10):
+def train_model(model: NeuralNetwork, dataloader: DataLoader, optimiser, device, num_epochs=10, criterion = nn.CrossEntropyLoss()):
 
     # Set model to train mode.
     model.train()
@@ -50,7 +50,7 @@ def train_model(model, dataloader: DataLoader, criterion, optimizer, device, mod
         # The batch size is defined when the dataloader is instantiated, but defaults to 64 items.
         for batch in dataloader:
             # Type hint to help me remember whats going on below.
-            labels: Tensor
+            inputs: Tensor
             labels: Tensor
 
             # Unpack the batch tuple into input tensors and labels tensors into 1D Arrays.
@@ -60,21 +60,20 @@ def train_model(model, dataloader: DataLoader, criterion, optimizer, device, mod
             inputs, labels = inputs.to(device), labels.to(device)
 
             # Reset the gradients from the previous run so they dont poison this run.
-            optimizer.zero_grad()
+            optimiser.zero_grad()
 
             # Pass the inputs through the models layers (Forward pass)
             outputs = model(inputs) 
 
-            loss = criterion(outputs, labels)  # Compute loss
-            loss.backward()  # Backpropagation
-            optimizer.step()  # Update weights
+            loss = criterion(outputs, labels)  
+            loss.backward()  
+            optimiser.step()  
 
             running_loss += loss.item()
 
         print(
             f"Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss / len(dataloader):.4f}"
         )
-    torch.save(model.state_dict(), model_file_path)
     return model
 
 
@@ -128,7 +127,6 @@ def main():
 
     device = torch.device("mps")
 
-    criterion = nn.CrossEntropyLoss()
     model = NeuralNetwork().to(device)
     optimiser = optim.Adam(model.parameters(), lr=0.001)
 
@@ -136,8 +134,9 @@ def main():
         model.load_state_dict(torch.load(args.model_file_path, weights_only=True))
     else:
         model = train_model(
-            model, training_dataloader, criterion, optimiser, device, args.model_file_path, num_epochs=10
+            model, training_dataloader, optimiser, device, num_epochs=10
         )
+        torch.save(model.state_dict(), args.model_file_path)
 
     accuracy = validate_model(model, validation_dataloader, device)
     print(f"Accuracy is {accuracy}%")
