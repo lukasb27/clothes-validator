@@ -35,13 +35,13 @@ def main():
         "--data-path",
         type=str,
         default="./data",
-        help="The path to download the dataset to or to delete",
+        help="The path to download the dataset to or to delete, defaults to ./data",
     )
     parser.add_argument(
         "--dataset-name",
         type=str,
         default="sunnykusawa/tshirts",
-        help="The full kaggle dataset name to download",
+        help="The full kaggle dataset name to download, defaults to sunnykusawa/tshirts",
     )
 
     args = parser.parse_args()

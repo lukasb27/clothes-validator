@@ -27,8 +27,8 @@ class Labeller:
         path = pathlib.Path(data_path)
         return list(path.rglob("*.[jpeg jpg]*"))
 
-    def _write_decision(self, image_path: str, decision: str, csv_path: str = CSV_PATH):
-        with open(csv_path, "a", newline="") as csvfile:
+    def _write_decision(self, image_path: str, decision: str):
+        with open(self.label_path, "a", newline="") as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow([image_path, decision])
         self.update_image()
@@ -69,9 +69,14 @@ def main():
         "--data-path",
         type=str,
         default="./data/",
-        help="The top level folder containing the dataset",
+        help="The top level folder containing the dataset, defaults to ./data/",
     )
-    parser.add_argument("--label-path", type=str, default="labels.csv", help="")
+    parser.add_argument(
+        "--label-path",
+        type=str,
+        default="labels.csv",
+        help="The path to create the labels csv at, defaults to labels.csv",
+    )
 
     args = parser.parse_args()
 
