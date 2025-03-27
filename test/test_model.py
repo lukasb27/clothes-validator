@@ -72,7 +72,8 @@ def test_training_model(dataloader):
     model = train_model(model, dataloader, optimiser, torch.device("mps"), num_epochs=1)
 
     assert type(model) is NeuralNetwork
-
+    assert next(model.parameters()).is_mps
+    
     # Test that the model created from train_model is able to make predictions.
     model.eval()
 
@@ -84,4 +85,4 @@ def test_training_model(dataloader):
         _, predicted = torch.max(outputs, 1)
     
     assert torch.is_tensor(predicted)
- 
+    

@@ -4,6 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import torch
 from torch import Tensor, nn, optim
+from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.transforms import v2
@@ -36,7 +37,7 @@ def get_data_loader(dataset: CustomImageDataset) -> DataLoader:
     return DataLoader(dataset, batch_size=64, shuffle=True)
 
 
-def train_model(model: NeuralNetwork, dataloader: DataLoader, optimiser, device, num_epochs=10, criterion = nn.CrossEntropyLoss()):
+def train_model(model: NeuralNetwork, dataloader: DataLoader, optimiser, device, num_epochs=10, criterion = CrossEntropyLoss):
 
     # Set model to train mode.
     model.train()
