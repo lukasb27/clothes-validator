@@ -3,5 +3,5 @@ data/
 labels.csv
 model.pth
 validation/
-validation_labels/
+validation_labels.csv
 .DS_Store
