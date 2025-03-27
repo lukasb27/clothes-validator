@@ -37,7 +37,23 @@ def get_data_loader(dataset: CustomImageDataset) -> DataLoader:
 
 
 def train_model(model: NeuralNetwork, dataloader: DataLoader, optimiser: optim.Adam, device: torch.device, num_epochs=10, criterion = nn.CrossEntropyLoss()):
+    """Train the NN model.
 
+    :param model: _description_
+    :type model: NeuralNetwork
+    :param dataloader: _description_
+    :type dataloader: DataLoader
+    :param optimiser: _description_
+    :type optimiser: optim.Adam
+    :param device: _description_
+    :type device: torch.device
+    :param num_epochs: _description_, defaults to 10
+    :type num_epochs: int, optional
+    :param criterion: _description_, defaults to nn.CrossEntropyLoss()
+    :type criterion: _type_, optional
+    :return: _description_
+    :rtype: _type_
+    """
     # Set model to train mode.
     model.train()
 
