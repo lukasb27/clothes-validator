@@ -12,7 +12,9 @@ from .custom_image_dataset import CustomImageDataset
 from .neural_network import NeuralNetwork
 
 
-def get_custom_dataset(label_file="labels.csv", transform: transforms.Compose =None) -> CustomImageDataset:
+def get_custom_dataset(
+    label_file="labels.csv", transform: transforms.Compose = None
+) -> CustomImageDataset:
     """Get custom dataset object.
 
     :param label_file: Path to the csv label, defaults to "labels.csv".
@@ -27,7 +29,7 @@ def get_custom_dataset(label_file="labels.csv", transform: transforms.Compose =N
 
 def get_data_loader(dataset: CustomImageDataset) -> DataLoader:
     """Get data loader object from a dataset.
-    
+
     :param dataset: A dataset object.
     :type dataset: CustomImageDataset
     :return: DataLoader, a dataset iterable.
@@ -36,23 +38,30 @@ def get_data_loader(dataset: CustomImageDataset) -> DataLoader:
     return DataLoader(dataset, batch_size=64, shuffle=True)
 
 
-def train_model(model: NeuralNetwork, dataloader: DataLoader, optimiser: optim.Adam, device: torch.device, num_epochs=10, criterion = nn.CrossEntropyLoss()):
+def train_model(
+    model: NeuralNetwork,
+    dataloader: DataLoader,
+    optimiser: optim.Adam,
+    device: torch.device,
+    num_epochs=10,
+    criterion=nn.CrossEntropyLoss(),
+):
     """Train the NN model.
 
-    :param model: _description_
+    :param model: The model to train
     :type model: NeuralNetwork
-    :param dataloader: _description_
+    :param dataloader: The data
     :type dataloader: DataLoader
-    :param optimiser: _description_
+    :param optimiser: The optimiser to use
     :type optimiser: optim.Adam
-    :param device: _description_
+    :param device: device to use for data, cpu/mps etc
     :type device: torch.device
-    :param num_epochs: _description_, defaults to 10
+    :param num_epochs: How many epochs to run, defaults to 10
     :type num_epochs: int, optional
-    :param criterion: _description_, defaults to nn.CrossEntropyLoss()
-    :type criterion: _type_, optional
-    :return: _description_
-    :rtype: _type_
+    :param criterion: Criterion, defaults to nn.CrossEntropyLoss()
+    :type criterion:  nn.CrossEntropyLoss, optional
+    :return: returns a trained model.
+    :rtype: NeuralNetwork
     """
     # Set model to train mode.
     model.train()
@@ -79,11 +88,11 @@ def train_model(model: NeuralNetwork, dataloader: DataLoader, optimiser: optim.A
             optimiser.zero_grad()
 
             # Pass the inputs through the models layers (Forward pass)
-            outputs = model(inputs) 
+            outputs = model(inputs)
 
-            loss = criterion(outputs, labels)  
-            loss.backward()  
-            optimiser.step()  
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimiser.step()
 
             running_loss += loss.item()
 
@@ -93,7 +102,23 @@ def train_model(model: NeuralNetwork, dataloader: DataLoader, optimiser: optim.A
     return model
 
 
-def validate_model(model, dataloader, device):
+def validate_model(
+    model: NeuralNetwork, dataloader: DataLoader, device: torch.device
+) -> float:
+    """With data, run inference and compare it to the label. 
+    Returns the percentage of how accurate the model was.
+
+    :param model: Neural network model to refer
+    :type model: NeuralNetwork
+    :param dataloader: The data
+    :type dataloader: DataLoader
+    :param device: The device to send inputs to
+    :type device: torch.device
+    :return: Percentage accuracy for the model.
+    :rtype: float
+    """
+    
+    # Ensure the model is in evaluate mode.
     model.eval()
 
     with torch.no_grad():
