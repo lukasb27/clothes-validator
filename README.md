@@ -48,4 +48,22 @@ options:
 
 ## Training the model
 
-TBD.
+If you want to train a model, use the create-model command. If you want to just get a model object you can load a model from a model save dict path by passing in the --model-file-path.
+The first time you run this the model will save it to the model file path, which defaults to model.pth.
+
+```
+> poetry run create_model -h
+
+usage: create_model [-h] [--training-label-path TRAINING_LABEL_PATH] [--validation-label-path VALIDATION_LABEL_PATH] [--model-file-path MODEL_FILE_PATH]
+
+Model handler. Responsible for either training, loading or validating a model.
+
+options:
+  -h, --help            show this help message and exit
+  --training-label-path TRAINING_LABEL_PATH
+                        Path to the training label csv
+  --validation-label-path VALIDATION_LABEL_PATH
+                        Path to the validation label csv
+  --model-file-path MODEL_FILE_PATH
+                        Path to the model pth file
+```
