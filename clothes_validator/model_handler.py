@@ -105,7 +105,7 @@ def train_model(
 def validate_model(
     model: NeuralNetwork, dataloader: DataLoader, device: torch.device
 ) -> float:
-    """With data, run inference and compare it to the label. 
+    """With data, run inference and compare it to the label.
     Returns the percentage of how accurate the model was.
 
     :param model: Neural network model to refer
@@ -117,7 +117,7 @@ def validate_model(
     :return: Percentage accuracy for the model.
     :rtype: float
     """
-    
+
     # Ensure the model is in evaluate mode.
     model.eval()
 
@@ -138,25 +138,30 @@ def validate_model(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Model handler. Responsible for either training or loading a model."
+        description="Model handler. Responsible for either training, loading or validating a model."
     )
     parser.add_argument(
         "--training-label-path",
         type=str,
         default="labels.csv",
-        help="Path to the training label csv",
+        help="Path to the training label csv, defaults to labels.csv",
     )
     parser.add_argument(
         "--validation-label-path",
         type=str,
         default="validation_labels.csv",
-        help="Path to the validation label csv",
+        help="Path to the validation label csv, defaults to validation_labels.csv",
     )
     parser.add_argument(
         "--model-file-path",
         type=str,
         default="model.pth",
-        help="Path to the model pth file",
+        help="Path to the model pth file, defaults to model.pth",
+    )
+    parser.add_argument(
+        "--save",
+        action="store_true",
+        help="Add an option to save the model to a file. Use the model-file-path arg to specify where to save to",
     )
     args = parser.parse_args()
 
@@ -178,7 +183,8 @@ def main():
         model = train_model(
             model, training_dataloader, optimiser, device, num_epochs=10
         )
-        torch.save(model.state_dict(), args.model_file_path)
+        if args.save:
+            torch.save(model.state_dict(), args.model_file_path)
 
     accuracy = validate_model(model, validation_dataloader, device)
     print(f"Accuracy is {accuracy}%")

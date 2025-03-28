@@ -54,16 +54,17 @@ The first time you run this the model will save it to the model file path, which
 ```
 > poetry run create_model -h
 
-usage: create_model [-h] [--training-label-path TRAINING_LABEL_PATH] [--validation-label-path VALIDATION_LABEL_PATH] [--model-file-path MODEL_FILE_PATH]
+usage: create_model [-h] [--training-label-path TRAINING_LABEL_PATH] [--validation-label-path VALIDATION_LABEL_PATH] [--model-file-path MODEL_FILE_PATH] [--save]
 
 Model handler. Responsible for either training, loading or validating a model.
 
 options:
   -h, --help            show this help message and exit
   --training-label-path TRAINING_LABEL_PATH
-                        Path to the training label csv
+                        Path to the training label csv, defaults to labels.csv
   --validation-label-path VALIDATION_LABEL_PATH
-                        Path to the validation label csv
+                        Path to the validation label csv, defaults to validation_labels.csv
   --model-file-path MODEL_FILE_PATH
-                        Path to the model pth file
+                        Path to the model pth file, defaults to model.pth
+  --save                Add an option to save the model to a file. Use the model-file-path arg to specify where to save to
 ```
